@@ -115,3 +115,4 @@ def test_test_transformers_uses_check_max_version_false():
         "check_transformers_version(check_max_version=False) to avoid "
         "silently skipping models when running with nightly transformers."
     )
+
