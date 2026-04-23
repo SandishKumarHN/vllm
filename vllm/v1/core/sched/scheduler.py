@@ -749,6 +749,28 @@ class Scheduler(SchedulerInterface):
                 ):
                     if request.has_encoder_inputs:
                         self.encoder_cache_manager.free(request)
+                    # Abort requests that permanently exceed total KV capacity
+                    # to prevent head-of-line blocking of subsequent requests.
+                    if not self.kv_cache_manager.can_ever_fit_full_sequence(
+                        request,
+                        num_new_computed_tokens=num_new_local_computed_tokens,
+                        new_computed_blocks=new_computed_blocks,
+                        num_external_computed_tokens=num_external_computed_tokens,
+                        num_encoder_tokens=num_encoder_tokens,
+                    ):
+                        request_queue.pop_request()
+                        logger.error(
+                            "Request %s (%d tokens) exceeds max KV cache "
+                            "capacity (%d tokens). Aborting. Consider "
+                            "increasing gpu_memory_utilization or reducing "
+                            "max_model_len.",
+                            request_id,
+                            request.num_tokens,
+                            (self.kv_cache_manager.block_pool.num_gpu_blocks - 1)
+                            * self.block_size,
+                        )
+                        self.finish_requests(request_id, RequestStatus.FINISHED_ABORTED)
+                        continue
                     break
 
                 new_blocks = self.kv_cache_manager.allocate_slots(
