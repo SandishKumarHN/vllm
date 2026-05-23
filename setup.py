@@ -15,7 +15,7 @@ from pathlib import Path
 from shutil import which
 
 import torch
-from packaging.version import Version, parse
+from packaging.version import parse, Version
 from setuptools import Extension, setup
 from setuptools.command.build_ext import build_ext
 from setuptools_rust import Binding, RustExtension
@@ -1054,7 +1054,9 @@ if _is_cuda():
         CUDA_HOME and get_nvcc_cuda_version() >= Version("12.3")
     ):
         # FA3 requires CUDA 12.3 or later
-        ext_modules.append(CMakeExtension(name="vllm.vllm_flash_attn._vllm_fa3_C"))
+        ext_modules.append(
+            CMakeExtension(name="vllm.vllm_flash_attn._vllm_fa3_C", optional=True)
+        )
     # FA4 CuteDSL - Python-only component for FA4's cute DSL support
     # Optional since this doesn't produce a .so file, just copies Python files
     ext_modules.append(

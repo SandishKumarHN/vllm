@@ -1,0 +1,22 @@
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 88c334b..662a947 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 17)
+ set(CMAKE_CXX_EXTENSIONS OFF)
+ 
+ set(FA2_ENABLED ON)
+-set(FA3_ENABLED ON)
++set(FA3_ENABLED OFF)
+ 
+ # CUDA by default, can be overridden by using -DVLLM_TARGET_DEVICE=... (used by setup.py)
+ set(VLLM_TARGET_DEVICE "cuda" CACHE STRING "Target device backend for vLLM")
+@@ -309,3 +309,8 @@ if (FA3_ENABLED AND ${CMAKE_CUDA_COMPILER_VERSION} GREATER_EQUAL 12.0)
+ elseif(${CMAKE_CUDA_COMPILER_VERSION} VERSION_LESS 12.0)
+     message(STATUS "FA3 is disabled because CUDA version is not 12.0 or later.")
+ endif ()
++
++if (NOT TARGET _vllm_fa3_C)
++    message(STATUS "FA3 disabled — creating stub _vllm_fa3_C target for vLLM outer build")
++    add_custom_target(_vllm_fa3_C)
++endif ()
